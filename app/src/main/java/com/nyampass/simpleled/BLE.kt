@@ -122,7 +122,26 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
 
     fun device(address: String) = bluetoothAdapter.getRemoteDevice(address)
 
-    fun connect(device: BluetoothDevice, callback: (gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) -> Unit) {
+    class Characteristic constructor(val gatt: BluetoothGatt, val characteristic: BluetoothGattCharacteristic) {
+        var writeCallback: ((success: Boolean) -> Unit)? = null
+
+        fun write(value: ByteArray, callback: (success: Boolean) -> Unit) {
+            characteristic.value = value
+            gatt.writeCharacteristic(characteristic)
+            this.writeCallback = { success ->
+                callback(success)
+                this@Characteristic.writeCallback = null
+            }
+        }
+
+        fun close() {
+            this.gatt.close()
+        }
+    }
+
+    fun connect(device: BluetoothDevice, callback: (characteristic: Characteristic) -> Unit) {
+        var characteristicObj: Characteristic? = null
+
         val gattCallback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 super.onConnectionStateChange(gatt, status, newState)
@@ -145,8 +164,8 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
                                 val properties = BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ
                                 if (characteristic.uuid == characteristicUUID.uuid &&
                                         characteristic.properties and properties == properties) {
-                                    log("characteristic: ${characteristic}")
-                                    callback(gatt, characteristic)
+                                    characteristicObj = Characteristic(gatt, characteristic)
+                                    callback(characteristicObj!!)
                                     found = true
                                     break
                                 }
@@ -166,21 +185,16 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
             override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
                 super.onCharacteristicWrite(gatt, characteristic, status)
 
-                log("onCharacteristicWrite: ${status} ${status == BluetoothGatt.GATT_SUCCESS}")
-
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     this@BLE.handler.sendEmptyMessage(What.successToWrite)
+                    characteristicObj?.writeCallback?.invoke(true)
                 } else {
                     this@BLE.handler.sendEmptyMessage(What.failToWrite)
+                    characteristicObj?.writeCallback?.invoke(false)
                 }
             }
         }
 
         device.connectGatt(context, true, gattCallback)
-    }
-
-    fun writeCharacteristic(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, value: ByteArray) {
-        characteristic.value = value
-        gatt.writeCharacteristic(characteristic)
     }
 }

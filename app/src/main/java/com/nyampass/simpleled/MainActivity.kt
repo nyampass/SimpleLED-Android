@@ -84,13 +84,17 @@ class MainActivity : Activity() {
             val dialog = AlertDialog.Builder(this@MainActivity)
                     .setTitle(device.name)
                     .setPositiveButton("ON") { dialog, position ->
-                        this@MainActivity.ble.connect(device) { gatt, characteristic ->
-                            this@MainActivity.ble.writeCharacteristic(gatt, characteristic, byteArrayOf(0x00))
+                        this@MainActivity.ble.connect(device) { characteristic ->
+                            characteristic.write(byteArrayOf(0x00)) {
+                                characteristic.close()
+                            }
                         }
                     }
                     .setNegativeButton("OFF") { dialog, position ->
-                        this@MainActivity.ble.connect(device) { gatt, characteristic ->
-                            this@MainActivity.ble.writeCharacteristic(gatt, characteristic, byteArrayOf(0x01))
+                        this@MainActivity.ble.connect(device) { characteristic ->
+                            characteristic.write(byteArrayOf(0x01)) {
+                                characteristic.close()
+                            }
                         }
                     }
                     .setNeutralButton("デフォルトに設定") { dialog, position ->

@@ -2,6 +2,7 @@ package com.nyampass.simpleled
 
 import android.content.Context
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 
@@ -33,12 +34,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         val device = ble.device(address)
+        val handler = Handler(Looper.getMainLooper())
 
-        ble.connect(device) { gatt, characteristic ->
-            ble.writeCharacteristic(gatt, characteristic, byteArrayOf(0x00))
-            Handler().postDelayed({
-                ble.writeCharacteristic(gatt, characteristic, byteArrayOf(0x01))
-            }, 3000)
+        ble.connect(device) { characteristic ->
+            characteristic.write(byteArrayOf(0x00)) { success ->
+                if (success) {
+                    handler.postDelayed({
+                        characteristic.write(byteArrayOf(0x01)) {
+                            characteristic.close()
+                        }
+                    }, 3000)
+                } else {
+                    characteristic.close()
+                }
+            }
         }
     }
 }
