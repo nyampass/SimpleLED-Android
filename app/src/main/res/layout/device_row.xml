@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout  xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="device"
+            type="android.bluetooth.BluetoothDevice" />
+    </data>
+
+    <LinearLayout
+        android:orientation="horizontal" android:layout_width="match_parent"
+        android:layout_height="wrap_content" android:paddingLeft="10dp">
+
+        <TextView
+            android:text=""
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:textSize="20sp"
+            android:id="@+id/check" />
+
+        <TextView
+            android:id="@+id/text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{device.name}"
+            android:textSize="20sp"
+            android:padding="10dp"
+            android:layout_weight="1" ></TextView>
+    </LinearLayout>
+</layout>

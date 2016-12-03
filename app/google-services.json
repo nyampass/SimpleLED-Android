@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "360692188289",
+    "firebase_url": "https://simpleled-73472.firebaseio.com",
+    "project_id": "simpleled-73472",
+    "storage_bucket": "simpleled-73472.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:360692188289:android:ee45fa443432aa9d",
+        "android_client_info": {
+          "package_name": "com.nyampass.simpleled"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "360692188289-lrrn0rf8rglmi48d1kkc5j93o0pvnujr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBs6xRPKl2NeYKwb-raWXM7ts7O8L4VNNo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
