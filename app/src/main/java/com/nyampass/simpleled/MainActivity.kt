@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothDevice
 import android.content.Context
-import android.content.SharedPreferences
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.View
@@ -75,7 +74,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        var binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
+        val binding = DataBindingUtil.setContentView<ActivityMainBinding>(this, R.layout.activity_main)
 
         val listView = binding.list
         listView.adapter = adapter
@@ -106,21 +105,23 @@ class MainActivity : Activity() {
             dialog.show()
         }
 
-        this.scanDevices()
+        this.scanDevices(true)
 
         binding.refresh.setOnRefreshListener {
-            this@MainActivity.scanDevices {
+            this@MainActivity.scanDevices(false) {
                 binding.refresh.isRefreshing = false
             }
         }
     }
 
-    private fun scanDevices(callback: (() -> Unit)? = null) {
+    private fun scanDevices(showDialog: Boolean, callback: (() -> Unit)? = null) {
         this.devices = listOf()
-        this.progressDialog.show()
+        if (showDialog)
+            this.progressDialog.show()
 
         this.ble.scanDevices { devices ->
-            this.progressDialog.hide()
+            if (showDialog)
+                this.progressDialog.hide()
             this.devices = devices
             callback?.invoke()
         }
