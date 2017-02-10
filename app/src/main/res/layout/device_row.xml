@@ -7,23 +7,37 @@
     </data>
 
     <LinearLayout
-        android:orientation="horizontal" android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:paddingLeft="10dp">
-
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="match_parent">
         <TextView
-            android:text=""
+            android:text="A"
             android:layout_width="20sp"
-            android:layout_height="20sp"
+            android:layout_height="match_parent"
             android:textSize="20sp"
-            android:id="@+id/check" />
+            android:gravity="center"
+            android:id="@+id/check"
+            android:layout_margin="10dp" />
 
-        <TextView
-            android:id="@+id/text"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@{device.name}"
-            android:textSize="20sp"
+        <LinearLayout
+            android:orientation="vertical" android:layout_width="0dp"
+            android:layout_weight="1"
             android:padding="10dp"
-            android:layout_weight="1" ></TextView>
+            android:layout_height="wrap_content" android:paddingLeft="10dp">
+
+
+            <TextView
+                android:id="@+id/text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{device.name}"
+                android:textSize="20sp" ></TextView>
+            <TextView
+                android:layout_width="match_parent"
+                android:text="@{device.address}"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
     </LinearLayout>
 </layout>

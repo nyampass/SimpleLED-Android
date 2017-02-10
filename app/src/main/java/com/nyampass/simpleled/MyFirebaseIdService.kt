@@ -14,7 +14,7 @@ class MyFirebaseIdService : FirebaseInstanceIdService() {
         val refreshedToken = FirebaseInstanceId.getInstance().token
         Log.d(TAG, "Refreshed token: " + refreshedToken!!)
 
-        val androidId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID)
+        val androidId = Settings.Secure.getString(this.contentResolver, Settings.Secure.ANDROID_ID)
 
         "http://192.168.11.68:3000/api/tokens/android/$androidId".httpPost(listOf("token" to refreshedToken))
                 .response { request, response, result ->

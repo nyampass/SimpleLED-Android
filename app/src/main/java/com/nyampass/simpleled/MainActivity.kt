@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.content.SharedPreferences
 import android.databinding.DataBindingUtil
 import android.os.Bundle
 import android.view.View
@@ -25,7 +26,7 @@ class MainActivity : Activity() {
         override fun getItemId(position: Int): Long = position.toLong()
 
         override fun getItem(position: Int): BluetoothDevice {
-            return devices.get(position)
+            return devices[position]
         }
 
         override fun getCount(): Int {
@@ -59,14 +60,14 @@ class MainActivity : Activity() {
         }
     }
 
-    val preference by lazy {
+    val preference: SharedPreferences? by lazy {
         this.getSharedPreferences("setting", Context.MODE_PRIVATE)
     }
 
     var selectedAddress: String?
-        get() = this.preference.getString("selectedAddress", null)
+        get() = this.preference!!.getString("selectedAddress", null)
         set(value) {
-            val editor = this.preference.edit()
+            val editor = this.preference!!.edit()
             editor.putString("selectedAddress",  value)
             editor.apply()
         }
@@ -79,27 +80,35 @@ class MainActivity : Activity() {
         val listView = binding.list
         listView.adapter = adapter
         listView.setOnItemClickListener { parent, view, position, id ->
-            val device = devices.get(position)
+            val device = devices[position]
+
+            val buttons = arrayOf("ONにする", "OFFにする", "デフォルトに設定")
+
             val dialog = AlertDialog.Builder(this@MainActivity)
                     .setTitle(device.name)
-                    .setPositiveButton("ON") { dialog, position ->
-                        this@MainActivity.ble.connect(device) { characteristic ->
-                            characteristic.write(byteArrayOf(0x00)) {
-                                characteristic.close()
+                    .setItems(buttons, { dialog, index ->
+                            when(index) {
+                                0 ->
+                                    this@MainActivity.ble.connect(device) { characteristic ->
+                                        characteristic.write(byteArrayOf(0x53, 0x01, 0x01)) {
+                                            characteristic.write(byteArrayOf(0x4e, 0x01, 0xFF.toByte())) {
+                                                characteristic.close()
+                                            }
+                                        }
+                                    }
+                                1 ->
+                                    this@MainActivity.ble.connect(device) { characteristic ->
+                                        characteristic.write(byteArrayOf(0x4e, 0x01, 0x00)) {
+                                            characteristic.close()
+                                        }
+                                    }
+
+                                2 -> {
+                                    this@MainActivity.selectedAddress = device.address
+                                    this@MainActivity.adapter.notifyDataSetChanged()
+                                }
                             }
-                        }
-                    }
-                    .setNegativeButton("OFF") { dialog, position ->
-                        this@MainActivity.ble.connect(device) { characteristic ->
-                            characteristic.write(byteArrayOf(0x01)) {
-                                characteristic.close()
-                            }
-                        }
-                    }
-                    .setNeutralButton("デフォルトに設定") { dialog, position ->
-                        this@MainActivity.selectedAddress = device.address
-                        this@MainActivity.adapter.notifyDataSetChanged()
-                    }
+                        })
                     .setCancelable(true)
                     .create()
             dialog.show()

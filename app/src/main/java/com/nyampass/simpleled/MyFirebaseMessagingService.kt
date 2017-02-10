@@ -24,10 +24,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         val preference = this.getSharedPreferences("setting", Context.MODE_PRIVATE)
-        val address = preference.getString("selectedAddress", null)
-        if (address == null) {
-            return
-        }
+        val address = preference.getString("selectedAddress", null) ?: return
 
         val ble = BLE(this) { success, message ->
             Toast.makeText(this@MyFirebaseMessagingService, message, Toast.LENGTH_SHORT).show()

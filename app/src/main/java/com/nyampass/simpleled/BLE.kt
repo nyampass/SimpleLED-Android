@@ -6,16 +6,15 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.ParcelUuid
-import android.util.Log
 
-class BLE constructor(val context: Context, val callback: (success: Boolean, messag: String) -> Unit) {
+class BLE constructor(val context: Context, val callback: (success: Boolean, message: String) -> Unit) {
     companion object {
-        val serviceUUID = ParcelUuid.fromString("00001815-0000-1000-8000-00805F9B34FB")
-        val characteristicUUID = ParcelUuid.fromString("00002A56-0000-1000-8000-00805F9B34FB")
+        val serviceUUID = ParcelUuid.fromString("713d0000-503e-4c75-ba94-3148f18d941e")!!
+        val characteristicUUID = ParcelUuid.fromString("713d0003-503e-4c75-ba94-3148f18d941e")!!
     }
 
     val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter = bluetoothManager.adapter
+    val bluetoothAdapter = bluetoothManager.adapter!!
 
     var bluetoothLeScanner: BluetoothLeScanner? = null
     var scanCallback: ScanCallback? = null
@@ -30,10 +29,6 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
         val failServiceIsNotFound = -3
         val failCharacteristicIsNotFound = -4
         val failToWrite = -5
-    }
-
-    fun log(message: String) {
-        Log.d("BLE", message)
     }
 
     val handler: Handler by lazy {
@@ -76,12 +71,6 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
         }
     }
 
-    fun cleanupBluetooth() {
-        this.stopToScanBluetooth()
-
-        this.devices = mutableListOf()
-    }
-
     fun scanDevices(foundDevicesCallback: (List<BluetoothDevice>) -> Unit) {
         val alreadyFoundDevices = mutableSetOf<String>()
         var found = false
@@ -93,7 +82,9 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
                 super.onScanResult(callbackType, result)
 
-                if (result != null && result.device != null && !alreadyFoundDevices.contains(result.device.address)) {
+                if (result != null && result.device != null
+                        && !alreadyFoundDevices.contains(result.device.address)) {
+
                     alreadyFoundDevices.add(result.device.address)
                     this@BLE.devices.add(result.device)
                     foundDevicesCallback(this@BLE.devices)
@@ -109,7 +100,7 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
         val filters = listOf(ScanFilter.Builder().setServiceUuid(serviceUUID).build())
         val scanSettings = ScanSettings.Builder().build()
 
-        this.bluetoothLeScanner?.startScan(filters, scanSettings, this.scanCallback)
+         this.bluetoothLeScanner?.startScan(null, scanSettings, this.scanCallback)
 
         Handler().postDelayed({
             this.stopToScanBluetooth()
@@ -120,7 +111,7 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
         }, 10000)
     }
 
-    fun device(address: String) = bluetoothAdapter.getRemoteDevice(address)
+    fun device(address: String) = bluetoothAdapter.getRemoteDevice(address)!!
 
     class Characteristic constructor(val gatt: BluetoothGatt, val characteristic: BluetoothGattCharacteristic) {
         var writeCallback: ((success: Boolean) -> Unit)? = null
@@ -161,9 +152,7 @@ class BLE constructor(val context: Context, val callback: (success: Boolean, mes
                         gatt.getService(serviceUUID.uuid)?.let { service ->
                             var found = false
                             for (characteristic in service.characteristics) {
-                                val properties = BluetoothGattCharacteristic.PROPERTY_WRITE or BluetoothGattCharacteristic.PROPERTY_READ
-                                if (characteristic.uuid == characteristicUUID.uuid &&
-                                        characteristic.properties and properties == properties) {
+                                if (characteristic.uuid.equals(characteristicUUID.uuid)) {
                                     characteristicObj = Characteristic(gatt, characteristic)
                                     callback(characteristicObj!!)
                                     found = true
